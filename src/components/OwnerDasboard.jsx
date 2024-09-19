@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ethers } from 'ethers';
+import { motion } from 'framer-motion';
 
 function OwnerDashboard({ contract }) {
   const [mintAmount, setMintAmount] = useState('');
@@ -33,29 +34,49 @@ function OwnerDashboard({ contract }) {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
-      <div className="p-8">
-        <div className="uppercase tracking-wide text-sm text-indigo-500 font-semibold mb-6">Owner Dashboard</div>
-        <form onSubmit={handleMint} className="mb-6">
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="mintAmount">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="max-w-lg mx-auto bg-white rounded-2xl shadow-lg overflow-hidden"
+    >
+      <div className="p-10">
+        <motion.h1
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="uppercase tracking-widest text-lg text-indigo-600 font-semibold mb-8"
+        >
+          Owner Dashboard
+        </motion.h1>
+
+        {/* Mint Energy Form */}
+        <motion.form 
+          initial={{ x: -20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          onSubmit={handleMint} 
+          className="mb-8 space-y-6"
+        >
+          <div>
+            <label className="block text-gray-700 font-medium mb-1" htmlFor="mintAmount">
               Mint Amount
             </label>
             <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              className="shadow-sm border border-gray-300 rounded-md w-full py-3 px-4 text-gray-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition ease-in-out duration-300"
               id="mintAmount"
               type="text"
-              placeholder="Amount"
+              placeholder="Enter amount"
               value={mintAmount}
               onChange={(e) => setMintAmount(e.target.value)}
             />
           </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="mintAddress">
+          <div>
+            <label className="block text-gray-700 font-medium mb-1" htmlFor="mintAddress">
               Mint To Address
             </label>
             <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              className="shadow-sm border border-gray-300 rounded-md w-full py-3 px-4 text-gray-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition ease-in-out duration-300"
               id="mintAddress"
               type="text"
               placeholder="0x..."
@@ -63,20 +84,30 @@ function OwnerDashboard({ contract }) {
               onChange={(e) => setMintAddress(e.target.value)}
             />
           </div>
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-md shadow-lg transition ease-in-out duration-300"
             type="submit"
           >
             Mint Energy
-          </button>
-        </form>
-        <form onSubmit={handleTransferOwnership}>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="transferOwnershipAddress">
+          </motion.button>
+        </motion.form>
+
+        {/* Transfer Ownership Form */}
+        <motion.form 
+          initial={{ x: 20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          onSubmit={handleTransferOwnership} 
+          className="space-y-6"
+        >
+          <div>
+            <label className="block text-gray-700 font-medium mb-1" htmlFor="transferOwnershipAddress">
               Transfer Ownership To
             </label>
             <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              className="shadow-sm border border-gray-300 rounded-md w-full py-3 px-4 text-gray-800 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition ease-in-out duration-300"
               id="transferOwnershipAddress"
               type="text"
               placeholder="0x..."
@@ -84,15 +115,17 @@ function OwnerDashboard({ contract }) {
               onChange={(e) => setTransferOwnershipAddress(e.target.value)}
             />
           </div>
-          <button
-            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-md shadow-lg transition ease-in-out duration-300"
             type="submit"
           >
             Transfer Ownership
-          </button>
-        </form>
+          </motion.button>
+        </motion.form>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

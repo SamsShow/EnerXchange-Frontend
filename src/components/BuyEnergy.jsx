@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
+import { motion } from 'framer-motion';
 
 function BuyEnergy({ contract }) {
   const [listings, setListings] = useState([]);
@@ -44,55 +45,80 @@ function BuyEnergy({ contract }) {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="max-w-lg mx-auto bg-white rounded-xl shadow-lg overflow-hidden"
+    >
       <div className="p-8">
-        <div className="uppercase tracking-wide text-sm text-indigo-500 font-semibold mb-6">Buy Energy</div>
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-2">Available Listings</h3>
-          <ul className="space-y-2">
+        <motion.h1 
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="uppercase tracking-widest text-lg text-indigo-600 font-semibold mb-8"
+        >
+          Buy Energy
+        </motion.h1>
+
+        <motion.div
+          initial={{ x: -20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          className="mb-6"
+        >
+          <h3 className="text-lg font-semibold mb-4 text-gray-800">Available Listings</h3>
+          <ul className="space-y-3">
             {listings.map((listing) => (
-              <li
+              <motion.li
+                whileHover={{ scale: 1.03 }}
                 key={listing.id}
-                className={`p-2 border rounded cursor-pointer ${
-                  selectedListing && selectedListing.id === listing.id ? 'bg-blue-100' : ''
+                className={`p-3 border border-gray-200 rounded-md shadow-sm transition duration-300 ease-in-out cursor-pointer ${
+                  selectedListing && selectedListing.id === listing.id ? 'bg-blue-100 border-blue-300' : 'bg-white'
                 }`}
                 onClick={() => setSelectedListing(listing)}
               >
-                Listing #{listing.id}: {ethers.utils.formatEther(listing.amount)} tokens at{' '}
-                {ethers.utils.formatEther(listing.pricePerUnit)} tokens per unit
-              </li>
+                <span className="font-medium">Listing #{listing.id}:</span> {ethers.utils.formatEther(listing.amount)} tokens at {ethers.utils.formatEther(listing.pricePerUnit)} tokens per unit
+              </motion.li>
             ))}
           </ul>
-        </div>
+        </motion.div>
+
         {selectedListing && (
-          <form onSubmit={handlePurchase}>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="purchaseAmount">
+          <motion.form
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.6 }}
+            onSubmit={handlePurchase}
+            className="space-y-6"
+          >
+            <div>
+              <label className="block text-gray-700 font-medium mb-1" htmlFor="purchaseAmount">
                 Amount to Purchase
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow-sm border border-gray-300 rounded-md w-full py-3 px-4 text-gray-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition ease-in-out duration-300"
                 id="purchaseAmount"
                 type="text"
-                placeholder="Amount"
+                placeholder="Enter amount"
                 value={purchaseAmount}
                 onChange={(e) => setPurchaseAmount(e.target.value)}
               />
             </div>
-            <div className="mb-6">
-              <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            <div>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-md shadow-lg transition ease-in-out duration-300"
                 type="submit"
               >
                 Purchase
-              </button>
+              </motion.button>
             </div>
-          </form>
+          </motion.form>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
 export default BuyEnergy;
-            

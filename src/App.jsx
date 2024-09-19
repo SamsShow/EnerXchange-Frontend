@@ -5,6 +5,7 @@ import Navbar from './components/Navbar';
 import OwnerDashboard from './components/OwnerDasboard';
 import SellEnergy from './components/SellEnergy';
 import BuyEnergy from './components/BuyEnergy';
+import LandingPage from './components/Landing';
 import contractABI from './config/abi.json';
 import { CONTRACT_ADDRESS } from './config/contractAddress';
 
@@ -55,7 +56,8 @@ function App() {
         <Navbar account={account} />
         <div className="container mx-auto mt-8">
           <Routes>
-            <Route path="/" element={<OwnerDashboard contract={contract} />} />
+            <Route path="/" element={<LandingPage contract={contract} />} />
+            <Route path="/owner" element={<OwnerDashboard contract={contract} />} />
             <Route path="/sell" element={<SellEnergy contract={contract} />} />
             <Route path="/buy" element={<BuyEnergy contract={contract} />} />
           </Routes>

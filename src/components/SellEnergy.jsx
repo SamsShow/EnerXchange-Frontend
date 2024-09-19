@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ethers } from 'ethers';
+import { motion } from 'framer-motion';
 
 function SellEnergy({ contract }) {
   const [amount, setAmount] = useState('');
@@ -24,58 +25,86 @@ function SellEnergy({ contract }) {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
-      <div className="p-8">
-        <div className="uppercase tracking-wide text-sm text-indigo-500 font-semibold mb-6">Sell Energy</div>
-        <form onSubmit={handleSell}>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="amount">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="max-w-lg mx-auto bg-white rounded-2xl shadow-lg overflow-hidden"
+    >
+      <div className="p-10">
+        <motion.h1
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="uppercase tracking-widest text-lg text-indigo-600 font-semibold mb-8"
+        >
+          Sell Energy
+        </motion.h1>
+
+        <motion.form 
+          initial={{ x: -20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          onSubmit={handleSell}
+          className="space-y-6"
+        >
+          {/* Amount Input */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1" htmlFor="amount">
               Amount (in tokens)
             </label>
             <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              className="shadow-sm border border-gray-300 rounded-md w-full py-3 px-4 text-gray-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition ease-in-out duration-300"
               id="amount"
               type="text"
-              placeholder="Amount"
+              placeholder="Enter amount"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
             />
           </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="pricePerUnit">
+
+          {/* Price Per Unit Input */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1" htmlFor="pricePerUnit">
               Price per Unit (in tokens)
             </label>
             <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              className="shadow-sm border border-gray-300 rounded-md w-full py-3 px-4 text-gray-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition ease-in-out duration-300"
               id="pricePerUnit"
               type="text"
-              placeholder="Price per Unit"
+              placeholder="Enter price per unit"
               value={pricePerUnit}
               onChange={(e) => setPricePerUnit(e.target.value)}
             />
           </div>
-          <div className="mb-6">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="duration">
+
+          {/* Duration Input */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1" htmlFor="duration">
               Duration (in seconds)
             </label>
             <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              className="shadow-sm border border-gray-300 rounded-md w-full py-3 px-4 text-gray-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition ease-in-out duration-300"
               id="duration"
               type="text"
-              placeholder="Duration"
+              placeholder="Enter duration"
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
             />
           </div>
-          <button
-            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+
+          {/* Submit Button */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-md shadow-lg transition ease-in-out duration-300"
             type="submit"
           >
             List Energy for Sale
-          </button>
-        </form>
+          </motion.button>
+        </motion.form>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
