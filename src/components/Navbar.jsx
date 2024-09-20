@@ -13,7 +13,7 @@ function Navbar({ account }) {
               </Link>
             </div>
             <div className="hidden md:flex items-center space-x-1">
-              <Link to="/owner" className="py-4 px-2 text-gray-500 hover:text-green-500 transition duration-300">Owner Dashboard</Link>
+              <Link to="/owner" className="py-4 px-2 text-gray-500 hover:text-green-500 transition duration-300">Dashboard</Link>
               <Link to="/sell" className="py-4 px-2 text-gray-500 hover:text-green-500 transition duration-300">Sell Energy</Link>
               <Link to="/buy" className="py-4 px-2 text-gray-500 hover:text-green-500 transition duration-300">Buy Energy</Link>
             </div>
