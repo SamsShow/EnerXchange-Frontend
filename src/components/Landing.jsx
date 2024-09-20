@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import logo from "../assets/enerxchange.png"
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -27,6 +28,7 @@ function LandingPage() {
         className="py-20 px-4 text-center relative overflow-hidden"
       >
         <div className="max-w-6xl mx-auto">
+          <img className='px-[450px] py-5' src={logo} alt="logo" />
           <motion.h1 variants={fadeIn} className="text-7xl font-bold mb-4">EnerXchange</motion.h1>
           <motion.p variants={fadeIn} className="text-xl mb-8">Revolutionizing peer-to-peer energy trading with blockchain technology</motion.p>
           <motion.div variants={fadeIn} className="flex justify-center space-x-4 mb-8">
@@ -45,7 +47,7 @@ function LandingPage() {
               Sell Energy
             </motion.button>
           </motion.div>
-          <motion.div variants={staggerChildren} className="grid grid-cols-3 gap-4">
+          <motion.div variants={staggerChildren} className="grid grid-cols-3 gap-4 hover:scale-90 transition-all">
             <motion.img variants={fadeIn} src="https://images.unsplash.com/photo-1639843906796-a2c47fc24330?q=80&w=1530&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Blockchain" className="w-full h-[480px]  rounded" />
             <motion.img variants={fadeIn} src="https://plus.unsplash.com/premium_photo-1679917152562-09bb29e555c1?q=80&w=1527&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Solar Panels" className="w-full h-[480px] rounded" />
             <motion.img variants={fadeIn} src="https://plus.unsplash.com/premium_photo-1679607686280-53c9473f5a80?q=80&w=1430&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Smart Grid" className="w-full h-[480px] rounded" />
