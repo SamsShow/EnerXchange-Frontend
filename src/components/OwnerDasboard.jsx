@@ -3,12 +3,78 @@ import { ethers } from 'ethers';
 import { motion } from 'framer-motion';
 
 function OwnerDashboard({ contract }) {
+  const [listingId, setListingId] = useState('');
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
+  const [amount, setAmount] = useState('');
+  const [owner, setOwner] = useState('');
+  const [spender, setSpender] = useState('');
+  const [address, setAddress] = useState('');
+  const [details, setDetails] = useState(null);
+  const [allowance, setAllowance] = useState('');
+  const [balance, setBalance] = useState('');
   const [mintAmount, setMintAmount] = useState('');
   const [mintAddress, setMintAddress] = useState('');
   const [transferOwnershipAddress, setTransferOwnershipAddress] = useState('');
 
-  const handleMint = async (e) => {
-    e.preventDefault();
+  const handleCancelListing = async () => {
+    if (!contract) return;
+    try {
+      const tx = await contract.cancelListing(listingId);
+      await tx.wait();
+      alert('Listing canceled successfully!');
+    } catch (error) {
+      console.error('Error canceling listing:', error);
+      alert('Error canceling listing. Check console for details.');
+    }
+  };
+
+  const handleTransferFrom = async () => {
+    if (!contract) return;
+    try {
+      const tx = await contract.transferFrom(from, to, ethers.utils.parseEther(amount));
+      await tx.wait();
+      alert('Transfer completed successfully!');
+    } catch (error) {
+      console.error('Error transferring tokens:', error);
+      alert('Error transferring tokens. Check console for details.');
+    }
+  };
+
+  const handleCheckAllowance = async () => {
+    if (!contract) return;
+    try {
+      const allowed = await contract.allowance(owner, spender);
+      setAllowance(ethers.utils.formatEther(allowed));
+    } catch (error) {
+      console.error('Error fetching allowance:', error);
+      alert('Error fetching allowance. Check console for details.');
+    }
+  };
+
+  const handleCheckBalance = async () => {
+    if (!contract) return;
+    try {
+      const bal = await contract.balanceOf(address);
+      setBalance(ethers.utils.formatEther(bal));
+    } catch (error) {
+      console.error('Error fetching balance:', error);
+      alert('Error fetching balance. Check console for details.');
+    }
+  };
+
+  const handleGetListingDetails = async () => {
+    if (!contract) return;
+    try {
+      const listingDetails = await contract.getListingDetails(listingId);
+      setDetails(listingDetails);
+    } catch (error) {
+      console.error('Error fetching listing details:', error);
+      alert('Error fetching listing details. Check console for details.');
+    }
+  };
+
+  const handleMint = async () => {
     if (!contract) return;
     try {
       const tx = await contract.mintEnergy(mintAddress, ethers.utils.parseEther(mintAmount));
@@ -20,8 +86,7 @@ function OwnerDashboard({ contract }) {
     }
   };
 
-  const handleTransferOwnership = async (e) => {
-    e.preventDefault();
+  const handleTransferOwnership = async () => {
     if (!contract) return;
     try {
       const tx = await contract.transferOwnership(transferOwnershipAddress);
@@ -33,97 +98,231 @@ function OwnerDashboard({ contract }) {
     }
   };
 
+  const fadeIn = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.5 } }
+  };
+
   return (
     <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="max-w-lg mx-auto bg-white rounded-2xl shadow-lg overflow-hidden"
+      className="p-6 max-w-4xl mx-auto bg-gray-100 min-h-screen"
+      initial="hidden"
+      animate="visible"
+      variants={fadeIn}
     >
-      <div className="p-10">
-        <motion.h1
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="uppercase tracking-widest text-lg text-indigo-600 font-semibold mb-8"
-        >
-          Owner Dashboard
-        </motion.h1>
+      <h1 className="text-3xl font-bold text-center text-indigo-600 mb-8">Owner Dashboard</h1>
 
-        {/* Mint Energy Form */}
-        <motion.form 
-          initial={{ x: -20, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.6 }}
-          onSubmit={handleMint} 
-          className="mb-8 space-y-6"
-        >
-          <div>
-            <label className="block text-gray-700 font-medium mb-1" htmlFor="mintAmount">
-              Mint Amount
-            </label>
-            <input
-              className="shadow-sm border border-gray-300 rounded-md w-full py-3 px-4 text-gray-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition ease-in-out duration-300"
-              id="mintAmount"
-              type="text"
-              placeholder="Enter amount"
-              value={mintAmount}
-              onChange={(e) => setMintAmount(e.target.value)}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Mint Energy */}
+        <motion.div className="bg-white p-6 rounded-lg shadow-md" variants={fadeIn}>
+          <h2 className="text-xl font-bold text-gray-700 mb-4">Mint Energy</h2>
+          <div className="flex flex-col space-y-4">
+            <input 
+              type="text" 
+              placeholder="Mint Amount" 
+              value={mintAmount} 
+              onChange={(e) => setMintAmount(e.target.value)} 
+              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
             />
-          </div>
-          <div>
-            <label className="block text-gray-700 font-medium mb-1" htmlFor="mintAddress">
-              Mint To Address
-            </label>
-            <input
-              className="shadow-sm border border-gray-300 rounded-md w-full py-3 px-4 text-gray-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition ease-in-out duration-300"
-              id="mintAddress"
-              type="text"
-              placeholder="0x..."
-              value={mintAddress}
-              onChange={(e) => setMintAddress(e.target.value)}
+            <input 
+              type="text" 
+              placeholder="Mint To Address" 
+              value={mintAddress} 
+              onChange={(e) => setMintAddress(e.target.value)} 
+              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
             />
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleMint} 
+              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-300"
+            >
+              Mint Energy
+            </motion.button>
           </div>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-md shadow-lg transition ease-in-out duration-300"
-            type="submit"
-          >
-            Mint Energy
-          </motion.button>
-        </motion.form>
+        </motion.div>
 
-        {/* Transfer Ownership Form */}
-        <motion.form 
-          initial={{ x: 20, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.6 }}
-          onSubmit={handleTransferOwnership} 
-          className="space-y-6"
-        >
-          <div>
-            <label className="block text-gray-700 font-medium mb-1" htmlFor="transferOwnershipAddress">
-              Transfer Ownership To
-            </label>
-            <input
-              className="shadow-sm border border-gray-300 rounded-md w-full py-3 px-4 text-gray-800 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition ease-in-out duration-300"
-              id="transferOwnershipAddress"
-              type="text"
-              placeholder="0x..."
-              value={transferOwnershipAddress}
-              onChange={(e) => setTransferOwnershipAddress(e.target.value)}
+        {/* Transfer Ownership */}
+        <motion.div className="bg-white p-6 rounded-lg shadow-md" variants={fadeIn}>
+          <h2 className="text-xl font-bold text-gray-700 mb-4">Transfer Ownership</h2>
+          <div className="flex flex-col space-y-4">
+            <input 
+              type="text" 
+              placeholder="New Owner Address" 
+              value={transferOwnershipAddress} 
+              onChange={(e) => setTransferOwnershipAddress(e.target.value)} 
+              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500"
             />
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleTransferOwnership} 
+              className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition duration-300"
+            >
+              Transfer Ownership
+            </motion.button>
           </div>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-md shadow-lg transition ease-in-out duration-300"
-            type="submit"
-          >
-            Transfer Ownership
-          </motion.button>
-        </motion.form>
+        </motion.div>
+
+        {/* Cancel Listing */}
+        <motion.div className="bg-white p-6 rounded-lg shadow-md" variants={fadeIn}>
+          <h2 className="text-xl font-bold text-gray-700 mb-4">Cancel Listing</h2>
+          <div className="flex flex-col space-y-4">
+            <input 
+              type="text" 
+              placeholder="Listing ID" 
+              value={listingId} 
+              onChange={(e) => setListingId(e.target.value)} 
+              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
+            />
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleCancelListing} 
+              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-300"
+            >
+              Cancel Listing
+            </motion.button>
+          </div>
+        </motion.div>
+
+        {/* Transfer From */}
+        <motion.div className="bg-white p-6 rounded-lg shadow-md" variants={fadeIn}>
+          <h2 className="text-xl font-bold text-gray-700 mb-4">Transfer From</h2>
+          <div className="flex flex-col space-y-4">
+            <input 
+              type="text" 
+              placeholder="From Address" 
+              value={from} 
+              onChange={(e) => setFrom(e.target.value)} 
+              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
+            />
+            <input 
+              type="text" 
+              placeholder="To Address" 
+              value={to} 
+              onChange={(e) => setTo(e.target.value)} 
+              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
+            />
+            <input 
+              type="text" 
+              placeholder="Amount" 
+              value={amount} 
+              onChange={(e) => setAmount(e.target.value)} 
+              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
+            />
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleTransferFrom} 
+              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-300"
+            >
+              Transfer
+            </motion.button>
+          </div>
+        </motion.div>
+
+        {/* Check Allowance */}
+        <motion.div className="bg-white p-6 rounded-lg shadow-md" variants={fadeIn}>
+          <h2 className="text-xl font-bold text-gray-700 mb-4">Check Allowance</h2>
+          <div className="flex flex-col space-y-4">
+            <input 
+              type="text" 
+              placeholder="Owner Address" 
+              value={owner} 
+              onChange={(e) => setOwner(e.target.value)} 
+              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
+            />
+            <input 
+              type="text" 
+              placeholder="Spender Address" 
+              value={spender} 
+              onChange={(e) => setSpender(e.target.value)} 
+              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
+            />
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleCheckAllowance} 
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300"
+            >
+              Check Allowance
+            </motion.button>
+            {allowance && (
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="mt-2 text-gray-600"
+              >
+                Allowance: {allowance} tokens
+              </motion.p>
+            )}
+          </div>
+        </motion.div>
+
+        {/* Check Balance */}
+        <motion.div className="bg-white p-6 rounded-lg shadow-md" variants={fadeIn}>
+          <h2 className="text-xl font-bold text-gray-700 mb-4">Check Balance</h2>
+          <div className="flex flex-col space-y-4">
+            <input 
+              type="text" 
+              placeholder="Address" 
+              value={address} 
+              onChange={(e) => setAddress(e.target.value)} 
+              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
+            />
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleCheckBalance} 
+              className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition duration-300"
+            >
+              Check Balance
+            </motion.button>
+            {balance && (
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="mt-2 text-gray-600"
+              >
+                Balance: {balance} tokens
+              </motion.p>
+            )}
+          </div>
+        </motion.div>
+
+        {/* Get Listing Details */}
+        <motion.div className="bg-white p-6 rounded-lg shadow-md" variants={fadeIn}>
+          <h2 className="text-xl font-bold text-gray-700 mb-4">Get Listing Details</h2>
+          <div className="flex flex-col space-y-4">
+            <input 
+              type="text" 
+              placeholder="Listing ID" 
+              value={listingId} 
+              onChange={(e) => setListingId(e.target.value)} 
+              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
+            />
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleGetListingDetails} 
+              className="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition duration-300"
+            >
+              Get Details
+            </motion.button>
+            {details && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="mt-4 text-gray-600"
+              >
+                <p>Seller: {details.seller}</p>
+                <p>Amount: {ethers.utils.formatEther(details.amount)} tokens</p>
+                <p>Price Per Unit: {ethers.utils.formatEther(details.pricePerUnit)} tokens</p>
+              </motion.div>
+            )}
+          </div>
+        </motion.div>
       </div>
     </motion.div>
   );
