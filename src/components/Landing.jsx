@@ -21,7 +21,7 @@ function LandingPage() {
   return (
     <div className="bg-black text-white min-h-screen">
       {/* Hero Section */}
-      <motion.section 
+      <motion.section
         initial="initial"
         animate="animate"
         variants={staggerChildren}
@@ -32,31 +32,51 @@ function LandingPage() {
           <motion.h1 variants={fadeIn} className="text-7xl font-bold mb-4">EnerXchange</motion.h1>
           <motion.p variants={fadeIn} className="text-xl mb-8">Revolutionizing peer-to-peer energy trading with blockchain technology</motion.p>
           <motion.div variants={fadeIn} className="flex justify-center space-x-4 mb-8">
-            <motion.button 
-              whileHover={{ scale: 1.05 }} 
+            <motion.button
+              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="bg-purple-600 text-white px-4 py-2 rounded"
             >
               Buy Energy
             </motion.button>
-            <motion.button 
-              whileHover={{ scale: 1.05 }} 
+            <motion.button
+              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="bg-transparent border border-white text-white px-4 py-2 rounded"
             >
               Sell Energy
             </motion.button>
           </motion.div>
-          <motion.div variants={staggerChildren} className="grid grid-cols-3 gap-4 hover:scale-90 transition-all">
-            <motion.img variants={fadeIn} src="https://images.unsplash.com/photo-1639843906796-a2c47fc24330?q=80&w=1530&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Blockchain" className="w-full h-[480px]  rounded" />
-            <motion.img variants={fadeIn} src="https://plus.unsplash.com/premium_photo-1679917152562-09bb29e555c1?q=80&w=1527&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Solar Panels" className="w-full h-[480px] rounded" />
-            <motion.img variants={fadeIn} src="https://plus.unsplash.com/premium_photo-1679607686280-53c9473f5a80?q=80&w=1430&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Smart Grid" className="w-full h-[480px] rounded" />
+          <motion.div variants={staggerChildren} className="grid grid-cols-3 gap-4 transition-all">
+            <div className="overflow-hidden rounded">
+              <img
+                src="https://images.unsplash.com/photo-1639843906796-a2c47fc24330?q=80&w=1530&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                alt="Blockchain"
+                className="w-full h-[480px] transition-transform duration-300 ease-in-out transform hover:scale-110"
+              />
+            </div>
+            <div className="overflow-hidden rounded">
+              <img
+                src="https://plus.unsplash.com/premium_photo-1679917152562-09bb29e555c1?q=80&w=1527&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                alt="Solar Panels"
+                className="w-full h-[480px] transition-transform duration-300 ease-in-out transform hover:scale-110"
+              />
+            </div>
+            <div className="overflow-hidden rounded">
+              <img
+                src="https://plus.unsplash.com/premium_photo-1679607686280-53c9473f5a80?q=80&w=1430&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                alt="Smart Grid"
+                className="w-full h-[480px] transition-transform duration-300 ease-in-out transform hover:scale-110"
+              />
+            </div>
           </motion.div>
+
+
         </div>
       </motion.section>
 
       {/* How It Works Section */}
-      <motion.section 
+      <motion.section
         initial="initial"
         whileInView="animate"
         viewport={{ once: true }}
@@ -84,7 +104,7 @@ function LandingPage() {
       </motion.section>
 
       {/* Key Features Section */}
-      <motion.section 
+      <motion.section
         initial="initial"
         whileInView="animate"
         viewport={{ once: true }}
@@ -118,7 +138,7 @@ function LandingPage() {
       </motion.section>
 
       {/* Benefits Section */}
-      <motion.section 
+      <motion.section
         initial="initial"
         whileInView="animate"
         viewport={{ once: true }}
@@ -143,7 +163,7 @@ function LandingPage() {
                 className="bg-gray-800 rounded-lg overflow-hidden"
               >
                 <img src={`https://plus.unsplash.com/premium_photo-1674506654010-22677db35bdf?q=80&w=1460&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D`} alt={benefit} className="w-full h-48 object-cover" />
-                
+
                 <div className="p-4">
                   <h3 className="text-lg font-semibold mb-2">{benefit}</h3>
                   <p className="text-sm text-gray-400">How {benefit.toLowerCase()} impacts you and your community.</p>
@@ -155,7 +175,7 @@ function LandingPage() {
       </motion.section>
 
       {/* CTA Section */}
-      <motion.section 
+      <motion.section
         initial="initial"
         whileInView="animate"
         viewport={{ once: true }}
