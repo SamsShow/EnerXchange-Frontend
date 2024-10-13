@@ -1,21 +1,44 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 function Navbar({ account }) {
+  const links = [
+    { to: '/owner', label: 'Dashboard' },
+    { to: '/sell', label: 'Sell Energy' },
+    { to: '/buy', label: 'Buy Energy' }
+  ];
+
   return (
     <nav className="bg-white shadow-lg">
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex justify-between">
           <div className="flex space-x-7">
             <div>
-              <Link to="/" className="flex items-center py-4 px-2">
-                <span className="font-semibold text-gray-500 text-lg">EnerXchange</span>
-              </Link>
+              <NavLink
+                to="/"
+                className={({ isActive }) =>
+                  isActive
+                    ? "flex items-center py-4 px-2 font-semibold text-green-500 text-lg"
+                    : "flex items-center py-4 px-2 font-semibold text-gray-500 text-lg"
+                }
+              >
+                EnerXchange
+              </NavLink>
             </div>
             <div className="hidden md:flex items-center space-x-1">
-              <Link to="/owner" className="py-4 px-2 text-gray-500 hover:text-green-500 transition duration-300">Dashboard</Link>
-              <Link to="/sell" className="py-4 px-2 text-gray-500 hover:text-green-500 transition duration-300">Sell Energy</Link>
-              <Link to="/buy" className="py-4 px-2 text-gray-500 hover:text-green-500 transition duration-300">Buy Energy</Link>
+              {links.map((link) => (
+                <NavLink
+                  key={link.to}
+                  to={link.to}
+                  className={({ isActive }) =>
+                    isActive
+                      ? "py-4 px-2 text-green-500 transition duration-300"
+                      : "py-4 px-2 text-gray-500 hover:text-green-500 transition duration-300"
+                  }
+                >
+                  {link.label}
+                </NavLink>
+              ))}
             </div>
           </div>
           <div className="hidden md:flex items-center space-x-3">
