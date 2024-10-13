@@ -8,6 +8,7 @@ import BuyEnergy from './components/BuyEnergy';
 import LandingPage from './components/Landing';
 import contractABI from './config/abi.json';
 import { CONTRACT_ADDRESS } from './config/contractAddress';
+import Footer from './components/Footer';
 
 function App() {
   const [contract, setContract] = useState(null);
@@ -62,6 +63,7 @@ function App() {
             <Route path="/buy" element={<BuyEnergy contract={contract} />} />
           </Routes>
         </div>
+        <Footer />
       </div>
     </Router>
   );
