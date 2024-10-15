@@ -25,11 +25,12 @@ function SellEnergy({ contract }) {
   };
 
   return (
+    <div className="container mx-auto pt-20 pb-[22px] bg-sell-image bg-no-repeat bg-cover bg-center">
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="max-w-lg mx-auto bg-white rounded-2xl shadow-lg overflow-hidden"
+      className="max-w-lg mx-auto backdrop-blur-[8px] rounded-2xl shadow-lg overflow-hidden"
     >
       <div className="p-10">
         <motion.h1
@@ -54,7 +55,7 @@ function SellEnergy({ contract }) {
               Amount (in tokens)
             </label>
             <input
-              className="shadow-sm border border-gray-300 rounded-md w-full py-3 px-4 text-gray-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition ease-in-out duration-300"
+              className="shadow-sm border border-gray-800 rounded-full w-full bg-transparent py-3 px-4 text-gray-900 outline-none placeholder-gray-700" 
               id="amount"
               type="text"
               placeholder="Enter amount"
@@ -69,7 +70,7 @@ function SellEnergy({ contract }) {
               Price per Unit (in tokens)
             </label>
             <input
-              className="shadow-sm border border-gray-300 rounded-md w-full py-3 px-4 text-gray-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition ease-in-out duration-300"
+              className="shadow-sm border border-gray-800 rounded-full w-full bg-transparent py-3 px-4 text-gray-900 outline-none placeholder-gray-700"
               id="pricePerUnit"
               type="text"
               placeholder="Enter price per unit"
@@ -84,7 +85,7 @@ function SellEnergy({ contract }) {
               Duration (in seconds)
             </label>
             <input
-              className="shadow-sm border border-gray-300 rounded-md w-full py-3 px-4 text-gray-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition ease-in-out duration-300"
+              className="shadow-sm border border-gray-800 rounded-full w-full bg-transparent py-3 px-4 text-gray-900 outline-none placeholder-gray-700"
               id="duration"
               type="text"
               placeholder="Enter duration"
@@ -105,6 +106,7 @@ function SellEnergy({ contract }) {
         </motion.form>
       </div>
     </motion.div>
+    </div>
   );
 }
 
