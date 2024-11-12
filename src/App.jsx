@@ -5,6 +5,11 @@ import Navbar from './components/Navbar';
 import LandingPage from './components/Landing';
 import EnergyMarketplace from './components/EnergyMarketplace ';
 import SellEnergy from './components/SellEnergy';
+import UserProfile from './components/UserProfile';
+import CarbonAnalytics from './components/CarbonAnalytics';
+import TransactionHistory from './components/TransactionHistory';
+import HelpDocumentation from './components/HelpDocumentation';
+import AdminDashboard from './components/AdminDashboard';
 import contractABI from './config/abi.json';
 import { CONTRACT_ADDRESS } from './config/contractAddress';
 
@@ -58,6 +63,11 @@ function App() {
             <Route path="/" element={<LandingPage contract={contract} />} />
             <Route path="/marketplace" element={<EnergyMarketplace contract={contract} />} />
             <Route path="/sell-energy" element={<SellEnergy contract={contract} />} />
+            <Route path="/user-profile" element={<UserProfile contract={contract} />} />
+            <Route path="/carbon-analytics" element={<CarbonAnalytics contract={contract} />} />
+            <Route path="/transactions" element={<TransactionHistory contract={contract} />} />
+            <Route path="/help" element={<HelpDocumentation contract={contract} />} />
+            <Route path="/admin" element={<AdminDashboard contract={contract} />} />
           </Routes>
         </div>
       </div>

@@ -3,10 +3,10 @@ import { ethers } from "ethers"
 
 const NeonBorderCard = ({ children, className = "" }) => (
   <div className={`relative group ${className}`}>
-    <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
-    <div className="relative bg-gray-800 p-6 rounded-lg">
-      {children}
-    </div>
+      <div className="absolute -inset-0.5 bg-gradient-to-r from-zinc-600 to-purple-500/30 rounded-lg blur opacity-0 group-hover:opacity-20 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
+      <div className="relative bg-gray-800 p-6 rounded-lg">
+          {children}
+      </div>
   </div>
 )
 
