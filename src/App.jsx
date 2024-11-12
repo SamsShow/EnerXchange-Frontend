@@ -52,9 +52,9 @@ function App() {
 
   return (
     <Router>
-      <div className="min-h-screen bg-gray-100">
+      <div>
         <Navbar account={account} />
-        <div className="container mx-auto mt-8">
+        <div className="">
           <Routes>
             <Route path="/" element={<LandingPage contract={contract} />} />
             <Route path="/owner" element={<OwnerDashboard contract={contract} />} />
