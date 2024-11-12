@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ethers } from 'ethers';
 import Navbar from './components/Navbar';
-import OwnerDashboard from './components/OwnerDasboard';
-import SellEnergy from './components/SellEnergy';
-import BuyEnergy from './components/BuyEnergy';
 import LandingPage from './components/Landing';
+import EnergyMarketplace from './components/EnergyMarketplace ';
+import SellEnergy from './components/SellEnergy';
 import contractABI from './config/abi.json';
 import { CONTRACT_ADDRESS } from './config/contractAddress';
 
@@ -57,9 +56,8 @@ function App() {
         <div className="">
           <Routes>
             <Route path="/" element={<LandingPage contract={contract} />} />
-            <Route path="/owner" element={<OwnerDashboard contract={contract} />} />
-            <Route path="/sell" element={<SellEnergy contract={contract} />} />
-            <Route path="/buy" element={<BuyEnergy contract={contract} />} />
+            <Route path="/marketplace" element={<EnergyMarketplace contract={contract} />} />
+            <Route path="/sell-energy" element={<SellEnergy contract={contract} />} />
           </Routes>
         </div>
       </div>
