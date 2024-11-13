@@ -28,23 +28,17 @@
 		"inputs": [
 			{
 				"internalType": "address",
-				"name": "spender",
+				"name": "to",
 				"type": "address"
 			},
 			{
 				"internalType": "uint256",
-				"name": "value",
+				"name": "amount",
 				"type": "uint256"
 			}
 		],
-		"name": "approve",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
+		"name": "adminMint",
+		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
 	},
@@ -228,6 +222,30 @@
 		],
 		"name": "Approval",
 		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "approve",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
 		"inputs": [
