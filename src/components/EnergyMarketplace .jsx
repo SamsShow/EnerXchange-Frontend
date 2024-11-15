@@ -3,12 +3,14 @@
 import React, { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
 
-const NeonBorderCard = ({ children, className = "" }) => (
-  <div className={`relative group ${className}`}>
-    <div className="absolute -inset-0.5 bg-gradient-to-r from-zinc-600 to-purple-500/30 rounded-lg blur opacity-0 group-hover:opacity-20 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
-    <div className="relative bg-gray-800 p-6 rounded-lg">{children}</div>
+const NeonBorderCard = ({ children, onClick }) => (
+  <div className="relative group" onClick={onClick}>
+    <div className="absolute -inset-0.5 bg-gradient-to-r from-zinc-600 to-zinc-950-600 rounded-lg blur opacity-0 group-hover:opacity-50 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
+    <div className="relative bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-750 transition-colors cursor-pointer">
+      {children}
+    </div>
   </div>
-);
+)
 
 const formatLargeNumber = (num) => {
   return parseFloat(ethers.utils.formatEther(num)).toLocaleString(undefined, {maximumFractionDigits: 4})
@@ -105,7 +107,7 @@ export default function EnergyMarketplace({ contract }) {
 
     try {
       setLoading(true)
-      
+      // Check if the user has sufficient balance
       const balance = await contract.balanceOf(await contract.signer.getAddress())
       const totalCost = ethers.BigNumber.from(selectedListing.pricePerUnit).mul(ethers.utils.parseEther(purchaseAmount))
       
@@ -113,7 +115,7 @@ export default function EnergyMarketplace({ contract }) {
         throw new Error("Insufficient balance to make this purchase.")
       }
 
-      
+      // Check if the purchase amount is within the allowed range
       const minPurchase = ethers.utils.formatEther(selectedListing.minimumPurchase)
       const maxPurchase = ethers.utils.formatEther(selectedListing.amount)
       
@@ -121,7 +123,7 @@ export default function EnergyMarketplace({ contract }) {
         throw new Error(`Purchase amount must be between ${minPurchase} and ${maxPurchase} units.`)
       }
 
-      
+      // Attempt to purchase energy
       const tx = await contract.purchaseEnergy(
         selectedListing.id,
         ethers.utils.parseEther(purchaseAmount)
@@ -129,7 +131,7 @@ export default function EnergyMarketplace({ contract }) {
       await tx.wait()
       alert('Energy purchased successfully!')
       setIsSheetOpen(false)
-      
+      // Refetch listings
       fetchListings()
     } catch (error) {
       console.error('Error purchasing energy:', error)
