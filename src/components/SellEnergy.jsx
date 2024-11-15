@@ -1,12 +1,14 @@
+"use client"
+
 import React, { useState, useEffect } from "react"
 import { ethers } from "ethers"
 
 const NeonBorderCard = ({ children, className = "" }) => (
   <div className={`relative group ${className}`}>
-      <div className="absolute -inset-0.5 bg-gradient-to-r from-zinc-600 to-purple-500/30 rounded-lg blur opacity-0 group-hover:opacity-20 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
-      <div className="relative bg-gray-800 p-6 rounded-lg">
-          {children}
-      </div>
+    <div className="absolute -inset-0.5 bg-gradient-to-r from-zinc-600 to-purple-500/30 rounded-lg blur opacity-0 group-hover:opacity-20 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
+    <div className="relative bg-gray-800 p-6 rounded-lg">
+      {children}
+    </div>
   </div>
 )
 
@@ -44,7 +46,6 @@ export default function SellEnergy({ contract }) {
     pricePerUnit: "",
     duration: "",
     minimumPurchase: "",
-    energySource: "solar",
   })
 
   const [userListings, setUserListings] = useState([])
@@ -97,8 +98,7 @@ export default function SellEnergy({ contract }) {
         ethers.utils.parseEther(formData.amount),
         ethers.utils.parseEther(formData.pricePerUnit),
         ethers.BigNumber.from(formData.duration),
-        ethers.utils.parseEther(formData.minimumPurchase),
-        formData.energySource
+        ethers.utils.parseEther(formData.minimumPurchase)
       )
 
       setShowConfirmation(true)
@@ -111,7 +111,6 @@ export default function SellEnergy({ contract }) {
         pricePerUnit: "",
         duration: "",
         minimumPurchase: "",
-        energySource: "solar",
       })
     } catch (error) {
       setError(error.message || "Error listing energy")
@@ -200,21 +199,6 @@ export default function SellEnergy({ contract }) {
                   required
                 />
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
-                  Energy Source
-                </label>
-                <select
-                  name="energySource"
-                  value={formData.energySource}
-                  onChange={handleInputChange}
-                  className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-100"
-                  required
-                >
-                  <option value="solar">Solar</option>
-                </select>
-              </div>
             </div>
 
             <div className="flex justify-end space-x-4">
@@ -241,7 +225,7 @@ export default function SellEnergy({ contract }) {
               >
                 <div>
                   <p className="font-medium text-gray-100">
-                    Listing #{listing.id} - {listing.energySource}
+                    Listing #{listing.id}
                   </p>
                   <p className="text-sm text-gray-400">
                     {ethers.utils.formatEther(listing.amount)} tokens at{" "}
@@ -249,7 +233,7 @@ export default function SellEnergy({ contract }) {
                   </p>
                   <p className="text-sm text-gray-400">
                     Expires:{" "}
-                    {new Date(listing.expirationTime * 1000).toLocaleDateString()}
+                    {new Date(listing.expirationTime.toNumber() * 1000).toLocaleDateString()}
                   </p>
                 </div>
                 {listing.active && (
@@ -285,8 +269,6 @@ export default function SellEnergy({ contract }) {
               <div className="text-gray-200">{formData.duration} seconds</div>
               <div className="font-medium text-gray-400">Minimum Purchase:</div>
               <div className="text-gray-200">{formData.minimumPurchase} tokens</div>
-              <div className="font-medium text-gray-400">Energy Source:</div>
-              <div className="text-gray-200 capitalize">{formData.energySource}</div>
             </div>
             <div className="pt-4 flex justify-end space-x-4">
               <button

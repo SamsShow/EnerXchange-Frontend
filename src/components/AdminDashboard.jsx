@@ -1,12 +1,14 @@
+"use client"
+
 import React, { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
 
 const NeonBorderCard = ({ children, className = "" }) => (
   <div className={`relative group ${className}`}>
-      <div className="absolute -inset-0.5 bg-gradient-to-r from-zinc-600 to-purple-500/30 rounded-lg blur opacity-0 group-hover:opacity-20 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
-      <div className="relative bg-gray-800 p-6 rounded-lg">
-          {children}
-      </div>
+    <div className="absolute -inset-0.5 bg-gradient-to-r from-zinc-600 to-purple-500/30 rounded-lg blur opacity-0 group-hover:opacity-20 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
+    <div className="relative bg-gray-800 p-6 rounded-lg">
+      {children}
+    </div>
   </div>
 )
 
@@ -45,7 +47,10 @@ export default function AdminDashboard({ contract }) {
   const [platformFee, setPlatformFee] = useState('')
   const [feeCollector, setFeeCollector] = useState('')
   const [userToVerify, setUserToVerify] = useState('')
-  const [meterToAuthorize, setMeterToAuthorize] = useState('')
+  const [userToInvalidate, setUserToInvalidate] = useState('')
+  const [listingToCancel, setListingToCancel] = useState('')
+  const [transferFrom, setTransferFrom] = useState({ from: '', to: '', amount: '' })
+  const [newOwner, setNewOwner] = useState('')
   const [isPaused, setIsPaused] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -56,6 +61,9 @@ export default function AdminDashboard({ contract }) {
     volumeTraded: 0,
     activeUsers: 0
   })
+  const [adminMintData, setAdminMintData] = useState({ recipients: '', amounts: '' })
+  const [userProfileAddress, setUserProfileAddress] = useState('')
+  const [userProfile, setUserProfile] = useState(null)
 
   useEffect(() => {
     if (contract) {
@@ -78,12 +86,18 @@ export default function AdminDashboard({ contract }) {
   }
 
   const fetchMetrics = async () => {
-    setMetrics({
-      totalUsers: 156,
-      activeListings: 23,
-      volumeTraded: 45678,
-      activeUsers: 89
-    })
+    try {
+      const totalSupply = await contract.totalSupply()
+      const listingCount = await contract.nextListingId()
+      setMetrics({
+        totalUsers: await contract.balanceOf(contract.address),
+        activeListings: listingCount.toNumber(),
+        volumeTraded: ethers.utils.formatEther(totalSupply),
+        activeUsers: 0 // This would require additional logic to determine
+      })
+    } catch (err) {
+      console.error('Error fetching metrics:', err)
+    }
   }
 
   const handleUpdateFee = async () => {
@@ -92,6 +106,7 @@ export default function AdminDashboard({ contract }) {
       const tx = await contract.setPlatformFee(platformFee)
       await tx.wait()
       setSuccess('Platform fee updated successfully')
+      fetchPlatformState()
     } catch (err) {
       setError('Failed to update platform fee')
     } finally {
@@ -102,9 +117,8 @@ export default function AdminDashboard({ contract }) {
   const handleUpdateFeeCollector = async () => {
     try {
       setLoading(true)
-      const tx = await contract.setFeeCollector(feeCollector)
-      await tx.wait()
-      setSuccess('Fee collector updated successfully')
+      // Note: There's no setFeeCollector function in the ABI. This might need to be implemented in the contract.
+      setError('setFeeCollector function not available in the contract')
     } catch (err) {
       setError('Failed to update fee collector')
     } finally {
@@ -126,15 +140,57 @@ export default function AdminDashboard({ contract }) {
     }
   }
 
-  const handleAuthorizeSmartMeter = async () => {
+  const handleInvalidateCertification = async () => {
     try {
       setLoading(true)
-      const tx = await contract.authorizeSmartMeter(meterToAuthorize)
+      const tx = await contract.invalidateCertification(userToInvalidate)
       await tx.wait()
-      setSuccess('Smart meter authorized successfully')
-      setMeterToAuthorize('')
+      setSuccess('User certification invalidated successfully')
+      setUserToInvalidate('')
     } catch (err) {
-      setError('Failed to authorize smart meter')
+      setError('Failed to invalidate user certification')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCancelListing = async () => {
+    try {
+      setLoading(true)
+      const tx = await contract.cancelListing(listingToCancel)
+      await tx.wait()
+      setSuccess('Listing cancelled successfully')
+      setListingToCancel('')
+    } catch (err) {
+      setError('Failed to cancel listing')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleTransferFrom = async () => {
+    try {
+      setLoading(true)
+      const tx = await contract.transferFrom(transferFrom.from, transferFrom.to, ethers.utils.parseEther(transferFrom.amount))
+      await tx.wait()
+      setSuccess('Tokens transferred successfully')
+      setTransferFrom({ from: '', to: '', amount: '' })
+    } catch (err) {
+      setError('Failed to transfer tokens')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleTransferOwnership = async () => {
+    try {
+      setLoading(true)
+      const tx = await contract.transferOwnership(newOwner)
+      await tx.wait()
+      setSuccess('Ownership transferred successfully')
+      setNewOwner('')
+    } catch (err) {
+      setError('Failed to transfer ownership')
     } finally {
       setLoading(false)
     }
@@ -154,11 +210,48 @@ export default function AdminDashboard({ contract }) {
     }
   }
 
+  const handleAdminMint = async () => {
+    try {
+      setLoading(true)
+      const recipients = adminMintData.recipients.split(',').map(addr => addr.trim())
+      const amounts = adminMintData.amounts.split(',').map(amount => ethers.utils.parseEther(amount.trim()))
+      const tx = await contract.adminMint(recipients, amounts)
+      await tx.wait()
+      setSuccess('Admin mint successful')
+      setAdminMintData({ recipients: '', amounts: '' })
+    } catch (err) {
+      setError('Failed to perform admin mint')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGetUserProfile = async () => {
+    try {
+      setLoading(true)
+      const profile = await contract.getUserProfile(userProfileAddress)
+      setUserProfile({
+        isVerified: profile.isVerified,
+        totalEnergyTraded: ethers.utils.formatEther(profile.totalEnergyTraded),
+        reputationScore: profile.reputationScore.toNumber(),
+        lastActivityTime: new Date(profile.lastActivityTime.toNumber() * 1000).toLocaleString(),
+        certificationIPFSHash: profile.certificationIPFSHash,
+        certificationTimestamp: new Date(profile.certificationTimestamp.toNumber() * 1000).toLocaleString(),
+        certificationType: profile.certificationType,
+        certificationValid: profile.certificationValid
+      })
+    } catch (err) {
+      setError('Failed to fetch user profile')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-6">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
-        
+
         {/* Alerts */}
         {error && <Alert variant="error" className="mb-4">{error}</Alert>}
         {success && <Alert className="mb-4">{success}</Alert>}
@@ -172,7 +265,7 @@ export default function AdminDashboard({ contract }) {
               </svg>
             }
             title="Total Users"
-            value={metrics.totalUsers}
+            value={metrics.totalUsers.toString()}
             color="bg-blue-500/20 text-blue-500"
           />
           <MetricCard
@@ -182,7 +275,7 @@ export default function AdminDashboard({ contract }) {
               </svg>
             }
             title="Active Listings"
-            value={metrics.activeListings}
+            value={metrics.activeListings.toString()}
             color="bg-green-500/20 text-green-500"
           />
           <MetricCard
@@ -192,7 +285,7 @@ export default function AdminDashboard({ contract }) {
               </svg>
             }
             title="Volume Traded"
-            value={`${metrics.volumeTraded} kWh`}
+            value={`${metrics.volumeTraded} EXT`}
             color="bg-yellow-500/20 text-yellow-500"
           />
           <MetricCard
@@ -202,7 +295,7 @@ export default function AdminDashboard({ contract }) {
               </svg>
             }
             title="Active Users"
-            value={metrics.activeUsers}
+            value={metrics.activeUsers.toString()}
             color="bg-purple-500/20 text-purple-500"
           />
         </div>
@@ -280,27 +373,190 @@ export default function AdminDashboard({ contract }) {
             </div>
           </NeonBorderCard>
 
-          {/* Smart Meter Authorization */}
+          {/* Invalidate Certification */}
           <NeonBorderCard>
-            <h2 className="text-xl font-bold mb-4">Smart Meter Authorization</h2>
+            <h2 className="text-xl font-bold mb-4">Invalidate Certification</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-300">Meter Address</label>
+                <label className="block text-sm font-medium mb-1 text-gray-300">User Address</label>
                 <input
                   type="text"
-                  value={meterToAuthorize}
-                  onChange={(e) => setMeterToAuthorize(e.target.value)}
+                  value={userToInvalidate}
+                  onChange={(e) => setUserToInvalidate(e.target.value)}
                   className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-gray-100 focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter smart meter address"
+                  placeholder="Enter user address to invalidate certification"
                 />
               </div>
               <button
-                onClick={handleAuthorizeSmartMeter}
+                onClick={handleInvalidateCertification}
+                disabled={loading}
+                className="w-full bg-red-600 text-white p-2 rounded hover:bg-red-700 disabled:opacity-50 transition-colors"
+              >
+                Invalidate Certification
+              </button>
+            </div>
+          </NeonBorderCard>
+
+          {/* Cancel Listing */}
+          <NeonBorderCard>
+            <h2 className="text-xl font-bold mb-4">Cancel Listing</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1 text-gray-300">Listing ID</label>
+                <input
+                  type="number"
+                  value={listingToCancel}
+                  onChange={(e) => setListingToCancel(e.target.value)}
+                  className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-gray-100 focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter listing ID to cancel"
+                />
+              </div>
+              <button
+                onClick={handleCancelListing}
+                disabled={loading}
+                className="w-full bg-yellow-600 text-white p-2 rounded hover:bg-yellow-700 disabled:opacity-50 transition-colors"
+              >
+                Cancel Listing
+              </button>
+            </div>
+          </NeonBorderCard>
+
+          {/* Transfer From */}
+          <NeonBorderCard>
+            <h2 className="text-xl font-bold mb-4">Transfer From</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1 text-gray-300">From Address</label>
+                <input
+                  type="text"
+                  value={transferFrom.from}
+                  onChange={(e) => setTransferFrom({...transferFrom, from: e.target.value})}
+                  className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-gray-100 focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter from address"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1 text-gray-300">To Address</label>
+                <input
+                  type="text"
+                  value={transferFrom.to}
+                  onChange={(e) => setTransferFrom({...transferFrom, to: e.target.value})}
+                  className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-gray-100 focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter to address"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1 text-gray-300">Amount</label>
+                <input
+                  type="number"
+                  value={transferFrom.amount}
+                  onChange={(e) => setTransferFrom({...transferFrom, amount: e.target.value})}
+                  className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-gray-100 focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter amount to transfer"
+                />
+              </div>
+              <button
+                onClick={handleTransferFrom}
                 disabled={loading}
                 className="w-full bg-purple-600 text-white p-2 rounded hover:bg-purple-700 disabled:opacity-50 transition-colors"
               >
-                Authorize Smart Meter
+                Transfer From
               </button>
+            </div>
+          </NeonBorderCard>
+
+          {/* Transfer Ownership */}
+          <NeonBorderCard>
+            <h2 className="text-xl font-bold mb-4">Transfer Ownership</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1 text-gray-300">New Owner Address</label>
+                <input
+                  type="text"
+                  value={newOwner}
+                  onChange={(e) => setNewOwner(e.target.value)}
+                  className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-gray-100 focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter new owner address"
+                />
+              </div>
+              <button
+                onClick={handleTransferOwnership}
+                disabled={loading}
+                className="w-full bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+              >
+                Transfer Ownership
+              </button>
+            </div>
+          </NeonBorderCard>
+
+          {/* Admin Mint */}
+          <NeonBorderCard>
+            <h2 className="text-xl font-bold mb-4">Admin Mint</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1 text-gray-300">Recipient Addresses (comma-separated)</label>
+                <input
+                  type="text"
+                  value={adminMintData.recipients}
+                  onChange={(e) => setAdminMintData({...adminMintData, recipients: e.target.value})}
+                  className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-gray-100 focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter recipient addresses"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1 text-gray-300">Amounts (comma-separated)</label>
+                <input
+                  type="text"
+                  value={adminMintData.amounts}
+                  onChange={(e) => setAdminMintData({...adminMintData, amounts: e.target.value})}
+                  className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-gray-100 focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter amounts to mint"
+                />
+              </div>
+              <button
+                onClick={handleAdminMint}
+                disabled={loading}
+                className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700 disabled:opacity-50 transition-colors"
+              >
+                Admin Mint
+              </button>
+            </div>
+          </NeonBorderCard>
+
+          {/* Get User Profile */}
+          <NeonBorderCard>
+            <h2 className="text-xl font-bold mb-4">Get User Profile</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1 text-gray-300">User Address</label>
+                <input
+                  type="text"
+                  value={userProfileAddress}
+                  onChange={(e) => setUserProfileAddress(e.target.value)}
+                  className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-gray-100 focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter user address"
+                />
+              </div>
+              <button
+                onClick={handleGetUserProfile}
+                disabled={loading}
+                className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              >
+                Get User Profile
+              </button>
+              {userProfile && (
+                <div className="mt-4 p-4 bg-gray-700 rounded">
+                  <h3 className="text-lg font-semibold mb-2">User Profile</h3>
+                  <p>Verified: {userProfile.isVerified ? 'Yes' : 'No'}</p>
+                  <p>Total Energy Traded: {userProfile.totalEnergyTraded} EXT</p>
+                  <p>Reputation Score: {userProfile.reputationScore}</p>
+                  <p>Last Activity: {userProfile.lastActivityTime}</p>
+                  <p>Certification IPFS Hash: {userProfile.certificationIPFSHash}</p>
+                  <p>Certification Timestamp: {userProfile.certificationTimestamp}</p>
+                  <p>Certification Type: {userProfile.certificationType}</p>
+                  <p>Certification Valid: {userProfile.certificationValid ? 'Yes' : 'No'}</p>
+                </div>
+              )}
             </div>
           </NeonBorderCard>
 

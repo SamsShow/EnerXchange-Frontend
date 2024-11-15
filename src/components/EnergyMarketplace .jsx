@@ -1,3 +1,5 @@
+"use client"
+
 import React, { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
 
@@ -10,7 +12,11 @@ const NeonBorderCard = ({ children, onClick }) => (
   </div>
 )
 
-export default function Component({ contract }) {
+const formatLargeNumber = (num) => {
+  return parseFloat(ethers.utils.formatEther(num)).toLocaleString(undefined, {maximumFractionDigits: 4})
+}
+
+export default function EnergyMarketplace({ contract }) {
   const [listings, setListings] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedListing, setSelectedListing] = useState(null)
@@ -22,6 +28,7 @@ export default function Component({ contract }) {
   const [isFiltersApplied, setIsFiltersApplied] = useState(false)
   const [purchaseAmount, setPurchaseAmount] = useState('')
   const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const [userBalance, setUserBalance] = useState('0')
 
   useEffect(() => {
     const fetchListings = async () => {
@@ -32,12 +39,10 @@ export default function Component({ contract }) {
         const fetchedListings = []
         for (let i = 0; i < listingCount; i++) {
           const listing = await contract.energyListings(i)
-          if (listing.active && listing.energySource === 'solar') {
-            const certifications = await contract.getUserCertifications(listing.seller)
+          if (listing.active) {
             fetchedListings.push({
               id: i,
-              ...listing,
-              certifications
+              ...listing
             })
           }
         }
@@ -50,6 +55,21 @@ export default function Component({ contract }) {
     }
 
     fetchListings()
+  }, [contract])
+
+  useEffect(() => {
+    const fetchUserBalance = async () => {
+      if (contract && contract.signer) {
+        try {
+          const address = await contract.signer.getAddress()
+          const balance = await contract.balanceOf(address)
+          setUserBalance(balance.toString())
+        } catch (error) {
+          console.error('Error fetching user balance:', error)
+        }
+      }
+    }
+    fetchUserBalance()
   }, [contract])
 
   const getFilteredListings = () => {
@@ -82,6 +102,49 @@ export default function Component({ contract }) {
     setIsFiltersApplied(false)
   }
 
+  const handlePurchase = async () => {
+    if (!selectedListing || !purchaseAmount) return
+
+    try {
+      setLoading(true)
+      // Check if the user has sufficient balance
+      const balance = await contract.balanceOf(await contract.signer.getAddress())
+      const totalCost = ethers.BigNumber.from(selectedListing.pricePerUnit).mul(ethers.utils.parseEther(purchaseAmount))
+      
+      if (balance.lt(totalCost)) {
+        throw new Error("Insufficient balance to make this purchase.")
+      }
+
+      // Check if the purchase amount is within the allowed range
+      const minPurchase = ethers.utils.formatEther(selectedListing.minimumPurchase)
+      const maxPurchase = ethers.utils.formatEther(selectedListing.amount)
+      
+      if (parseFloat(purchaseAmount) < parseFloat(minPurchase) || parseFloat(purchaseAmount) > parseFloat(maxPurchase)) {
+        throw new Error(`Purchase amount must be between ${minPurchase} and ${maxPurchase} units.`)
+      }
+
+      // Attempt to purchase energy
+      const tx = await contract.purchaseEnergy(
+        selectedListing.id,
+        ethers.utils.parseEther(purchaseAmount)
+      )
+      await tx.wait()
+      alert('Energy purchased successfully!')
+      setIsSheetOpen(false)
+      // Refetch listings
+      fetchListings()
+    } catch (error) {
+      console.error('Error purchasing energy:', error)
+      if (error.message.includes("execution reverted")) {
+        alert('Transaction failed. Please check your balance and the listing details.')
+      } else {
+        alert(error.message || 'Error purchasing energy. Please try again.')
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const filteredListings = getFilteredListings()
 
   return (
@@ -89,7 +152,7 @@ export default function Component({ contract }) {
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-100 mb-4">Energy Marketplace</h1>
-          <p className="text-gray-400">Browse and purchase solar energy from verified local sellers</p>
+          <p className="text-gray-400">Browse and purchase energy from verified sellers</p>
         </div>
 
         <div className="mb-8 bg-gray-800 border border-gray-700 rounded-lg p-6">
@@ -154,7 +217,7 @@ export default function Component({ contract }) {
           </div>
         ) : filteredListings.length === 0 ? (
           <div className="bg-yellow-900 border border-yellow-800 text-yellow-200 px-4 py-3 rounded-md">
-            <p>No solar energy listings found {isFiltersApplied ? 'matching your criteria. Try adjusting your filters.' : '.'}</p>
+            <p>No energy listings found {isFiltersApplied ? 'matching your criteria. Try adjusting your filters.' : '.'}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -173,7 +236,7 @@ export default function Component({ contract }) {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-100">Solar Energy</h3>
+                        <h3 className="text-lg font-semibold text-gray-100">Energy Listing</h3>
                         <p className="text-sm text-gray-400">ID: #{listing.id}</p>
                       </div>
                     </div>
@@ -196,23 +259,9 @@ export default function Component({ contract }) {
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-400">Expires</span>
                       <span className="font-medium text-gray-200">
-                        {new Date(listing.expirationTime * 1000).toLocaleDateString()}
+                        {new Date(listing.expirationTime.toNumber() * 1000).toLocaleDateString()}
                       </span>
                     </div>
-                    {listing.certifications.length > 0 && (
-                      <div className="pt-4 border-t border-gray-700">
-                        <div className="flex flex-wrap gap-2">
-                          {listing.certifications.map((cert, index) => (
-                            <span
-                              key={index}
-                              className="px-2 py-1 text-xs bg-green-900 text-green-200 rounded-full"
-                            >
-                              {cert}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
               </NeonBorderCard>
@@ -231,14 +280,14 @@ export default function Component({ contract }) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
-              <h2 className="text-2xl font-bold text-gray-100 mb-6">Purchase Solar Energy</h2>
+              <h2 className="text-2xl font-bold text-gray-100 mb-6">Purchase Energy</h2>
               <div className="space-y-6">
                 <div className="flex items-center space-x-3">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-100">Solar Energy</h3>
+                    <h3 className="text-lg font-semibold text-gray-100">Energy Listing</h3>
                     <p className="text-sm text-gray-400">Listing #{selectedListing.id}</p>
                   </div>
                 </div>
@@ -249,26 +298,18 @@ export default function Component({ contract }) {
                     <p className="font-mono text-sm bg-gray-700 p-2 rounded text-gray-200">{selectedListing.seller}</p>
                   </div>
                   <div>
-                    <label className="block text-gray-400 mb-1">Carbon Credits</label>
-                    <p className="font-medium text-gray-200">{ethers.utils.formatEther(selectedListing.carbonCredits)}</p>
+                    <label className="block text-gray-400 mb-1">Available Amount</label>
+                    <p className="font-medium text-gray-200">{formatLargeNumber(selectedListing.amount)} units</p>
+                  </div>
+                  <div>
+                    <label className="block text-gray-400 mb-1">Minimum Purchase</label>
+                    <p className="font-medium text-gray-200">{formatLargeNumber(selectedListing.minimumPurchase)} units</p>
+                  </div>
+                  <div>
+                    <label className="block text-gray-400 mb-1">Your Balance</label>
+                    <p className="font-medium text-gray-200">{formatLargeNumber(userBalance)} EXT</p>
                   </div>
                 </div>
-
-                {selectedListing.certifications.length > 0 && (
-                  <div>
-                    <label className="block text-gray-400 mb-2">Certifications</label>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedListing.certifications.map((cert, index) => (
-                        <span
-                          key={index}
-                          className="px-3 py-1 bg-green-900 text-green-200 rounded-full text-sm"
-                        >
-                          {cert}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
 
                 <div className="space-y-4">
                   <div>
@@ -303,9 +344,10 @@ export default function Component({ contract }) {
 
                   <button 
                     className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed"
-                    disabled={!purchaseAmount}
+                    disabled={!purchaseAmount || loading}
+                    onClick={handlePurchase}
                   >
-                    {purchaseAmount ? `Purchase ${purchaseAmount} units` : 'Enter purchase amount'}
+                    {loading ? 'Processing...' : (purchaseAmount ? `Purchase ${purchaseAmount} units` : 'Enter purchase amount')}
                   </button>
                 </div>
               </div>

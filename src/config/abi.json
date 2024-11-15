@@ -9,32 +9,14 @@
 	{
 		"inputs": [
 			{
-				"internalType": "address",
-				"name": "user",
-				"type": "address"
+				"internalType": "address[]",
+				"name": "recipients",
+				"type": "address[]"
 			},
 			{
-				"internalType": "string",
-				"name": "certification",
-				"type": "string"
-			}
-		],
-		"name": "addUserCertification",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "to",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
+				"internalType": "uint256[]",
+				"name": "amounts",
+				"type": "uint256[]"
 			}
 		],
 		"name": "adminMint",
@@ -60,35 +42,8 @@
 				"type": "uint256"
 			}
 		],
-		"stateMutability": "payable",
+		"stateMutability": "nonpayable",
 		"type": "constructor"
-	},
-	{
-		"inputs": [],
-		"name": "ECDSAInvalidSignature",
-		"type": "error"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "length",
-				"type": "uint256"
-			}
-		],
-		"name": "ECDSAInvalidSignatureLength",
-		"type": "error"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "bytes32",
-				"name": "s",
-				"type": "bytes32"
-			}
-		],
-		"name": "ECDSAInvalidSignatureS",
-		"type": "error"
 	},
 	{
 		"inputs": [
@@ -177,6 +132,36 @@
 		"type": "error"
 	},
 	{
+		"inputs": [],
+		"name": "ExpiredListing",
+		"type": "error"
+	},
+	{
+		"inputs": [],
+		"name": "FeeTooHigh",
+		"type": "error"
+	},
+	{
+		"inputs": [],
+		"name": "InsufficientBalance",
+		"type": "error"
+	},
+	{
+		"inputs": [],
+		"name": "InvalidAmount",
+		"type": "error"
+	},
+	{
+		"inputs": [],
+		"name": "InvalidIPFSHash",
+		"type": "error"
+	},
+	{
+		"inputs": [],
+		"name": "InvalidListing",
+		"type": "error"
+	},
+	{
 		"inputs": [
 			{
 				"internalType": "address",
@@ -196,6 +181,11 @@
 			}
 		],
 		"name": "OwnableUnauthorizedAccount",
+		"type": "error"
+	},
+	{
+		"inputs": [],
+		"name": "Unauthorized",
 		"type": "error"
 	},
 	{
@@ -248,14 +238,33 @@
 		"type": "function"
 	},
 	{
+		"anonymous": false,
 		"inputs": [
 			{
-				"internalType": "address",
-				"name": "meter",
-				"type": "address"
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "totalAmount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "recipientCount",
+				"type": "uint256"
 			}
 		],
-		"name": "authorizeSmartMeter",
+		"name": "BatchMintCompleted",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "listingId",
+				"type": "uint256"
+			}
+		],
+		"name": "cancelListing",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -271,12 +280,18 @@
 			},
 			{
 				"indexed": false,
+				"internalType": "bool",
+				"name": "isValid",
+				"type": "bool"
+			},
+			{
+				"indexed": false,
 				"internalType": "uint256",
-				"name": "amount",
+				"name": "timestamp",
 				"type": "uint256"
 			}
 		],
-		"name": "CarbonCreditsEarned",
+		"name": "CertificationStatusChanged",
 		"type": "event"
 	},
 	{
@@ -291,11 +306,23 @@
 			{
 				"indexed": false,
 				"internalType": "string",
-				"name": "certification",
+				"name": "ipfsHash",
 				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "certificationType",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
 			}
 		],
-		"name": "CertificationAdded",
+		"name": "CertificationUpdated",
 		"type": "event"
 	},
 	{
@@ -388,6 +415,19 @@
 	{
 		"inputs": [
 			{
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			}
+		],
+		"name": "invalidateCertification",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
 				"internalType": "uint256",
 				"name": "amount",
 				"type": "uint256"
@@ -406,11 +446,6 @@
 				"internalType": "uint256",
 				"name": "minimumPurchase",
 				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "energySource",
-				"type": "string"
 			}
 		],
 		"name": "listEnergy",
@@ -426,22 +461,15 @@
 				"internalType": "uint256",
 				"name": "listingId",
 				"type": "uint256"
-			}
-		],
-		"name": "ListingCancelled",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
+			},
 			{
 				"indexed": true,
 				"internalType": "address",
-				"name": "meter",
+				"name": "seller",
 				"type": "address"
 			}
 		],
-		"name": "MeterAuthorized",
+		"name": "ListingCancelled",
 		"type": "event"
 	},
 	{
@@ -528,34 +556,6 @@
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "producer",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "source",
-				"type": "string"
-			},
-			{
-				"internalType": "bytes",
-				"name": "signature",
-				"type": "bytes"
-			}
-		],
-		"name": "reportEnergyProduction",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
 		"anonymous": false,
 		"inputs": [
 			{
@@ -573,32 +573,6 @@
 		],
 		"name": "ReputationUpdated",
 		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "newCollector",
-				"type": "address"
-			}
-		],
-		"name": "setFeeCollector",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "newFee",
-				"type": "uint256"
-			}
-		],
-		"name": "setPlatformFee",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
 	},
 	{
 		"inputs": [
@@ -712,6 +686,29 @@
 		"type": "event"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "ipfsHash",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "certType",
+				"type": "string"
+			}
+		],
+		"name": "updateUserCertification",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"anonymous": false,
 		"inputs": [
 			{
@@ -719,6 +716,12 @@
 				"internalType": "address",
 				"name": "user",
 				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
 			}
 		],
 		"name": "UserVerified",
@@ -853,13 +856,8 @@
 				"type": "uint256"
 			},
 			{
-				"internalType": "string",
-				"name": "energySource",
-				"type": "string"
-			},
-			{
 				"internalType": "uint256",
-				"name": "carbonCredits",
+				"name": "creationTime",
 				"type": "uint256"
 			}
 		],
@@ -906,12 +904,86 @@
 				"type": "address"
 			}
 		],
-		"name": "getUserCertifications",
+		"name": "getUserProfile",
 		"outputs": [
 			{
-				"internalType": "string[]",
+				"internalType": "bool",
+				"name": "isVerified",
+				"type": "bool"
+			},
+			{
+				"internalType": "uint256",
+				"name": "totalEnergyTraded",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "reputationScore",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "lastActivityTime",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "certificationIPFSHash",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "certificationTimestamp",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "certificationType",
+				"type": "string"
+			},
+			{
+				"internalType": "bool",
+				"name": "certificationValid",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "MAX_LISTING_DURATION",
+		"outputs": [
+			{
+				"internalType": "uint256",
 				"name": "",
-				"type": "string[]"
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "MAX_PLATFORM_FEE",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "MIN_AMOUNT",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
@@ -1058,24 +1130,30 @@
 				"internalType": "uint256",
 				"name": "reputationScore",
 				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
+			},
+			{
+				"internalType": "uint256",
+				"name": "lastActivityTime",
+				"type": "uint256"
+			},
 			{
 				"internalType": "string",
-				"name": "",
+				"name": "certificationIPFSHash",
 				"type": "string"
-			}
-		],
-		"name": "validEnergySources",
-		"outputs": [
+			},
+			{
+				"internalType": "uint256",
+				"name": "certificationTimestamp",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "certificationType",
+				"type": "string"
+			},
 			{
 				"internalType": "bool",
-				"name": "",
+				"name": "certificationValid",
 				"type": "bool"
 			}
 		],
