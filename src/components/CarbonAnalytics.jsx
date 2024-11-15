@@ -13,6 +13,18 @@ const NeonBorderCard = ({ children, className = "" }) => (
   </div>
 )
 
+const safeBigNumberToNumber = (bigNumber) => {
+  try {
+    // First convert to string to handle large numbers safely
+    const stringValue = ethers.utils.formatEther(bigNumber)
+    // Then parse to float for numerical operations
+    return parseFloat(stringValue)
+  } catch (error) {
+    console.error('Error converting BigNumber:', error)
+    return 0
+  }
+}
+
 export default function CarbonAnalytics({ contract }) {
   const [analyticsData, setAnalyticsData] = useState({
     solarProduction: [],
@@ -22,6 +34,7 @@ export default function CarbonAnalytics({ contract }) {
     listingsData: []
   })
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     const fetchAnalytics = async () => {
@@ -50,7 +63,7 @@ export default function CarbonAnalytics({ contract }) {
               address: listing.seller,
               isVerified: profile.isVerified,
               totalEnergyTraded: ethers.utils.formatEther(profile.totalEnergyTraded),
-              reputationScore: profile.reputationScore.toNumber(),
+              reputationScore: safeBigNumberToNumber(profile.reputationScore),
               lastActivityTime: new Date(profile.lastActivityTime * 1000).toLocaleString(),
               certificationValid: profile.certificationValid
             })
@@ -70,8 +83,10 @@ export default function CarbonAnalytics({ contract }) {
           userProfiles: userProfiles,
           listingsData: listings
         })
+        setError(null)
       } catch (error) {
         console.error('Error fetching solar analytics:', error)
+        setError('Failed to fetch analytics data. Please try again later.')
       } finally {
         setLoading(false)
       }
@@ -111,6 +126,18 @@ export default function CarbonAnalytics({ contract }) {
       </div>
     )
   }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-900">
+        <div className="text-red-500 text-center">
+          <h2 className="text-xl font-bold mb-2">Error</h2>
+          <p>{error}</p>
+        </div>
+      </div>
+    )
+  }
+
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 pt-20 px-6">

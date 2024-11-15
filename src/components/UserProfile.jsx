@@ -1,8 +1,9 @@
-"use client"
+"use client";
 
 import React, { useState, useEffect, Fragment } from "react";
 import { ethers } from "ethers";
 import { Dialog, Transition } from "@headlessui/react";
+import axios from "axios";
 import contractABI from "../config/abi.json";
 import { CONTRACT_ADDRESS } from "../config/contractAddress";
 
@@ -13,25 +14,35 @@ const NeonBorderCard = ({ children, className = "" }) => (
   </div>
 );
 
-const Alert = ({ children }) => (
-  <div className="p-4 bg-red-900 text-red-200 rounded-md flex items-center space-x-2">
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-5 w-5"
-      viewBox="0 0 20 20"
-      fill="currentColor"
-    >
-      <path
-        fillRule="evenodd"
-        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-        clipRule="evenodd"
-      />
-    </svg>
-    <span>{children}</span>
-  </div>
-);
+const Alert = ({ children, type = "error" }) => {
+  const colors = {
+    error: "bg-red-900 text-red-200",
+    warning: "bg-yellow-900 text-yellow-200",
+    success: "bg-green-900 text-green-200",
+  };
 
-export default function UserProfile({ isAdmin = false }) {
+  return (
+    <div
+      className={`p-4 ${colors[type]} rounded-md flex items-center space-x-2`}
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-5 w-5"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+      >
+        <path
+          fillRule="evenodd"
+          d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+          clipRule="evenodd"
+        />
+      </svg>
+      <span>{children}</span>
+    </div>
+  );
+};
+
+function UserProfile({ isAdmin = false }) {
   const [contract, setContract] = useState(null);
   const [profile, setProfile] = useState({
     isVerified: false,
@@ -42,30 +53,36 @@ export default function UserProfile({ isAdmin = false }) {
     certificationTimestamp: 0,
     certificationType: "",
     certificationValid: false,
-    certifications: []
+    certifications: [],
   });
   const [userAddress, setUserAddress] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [newCertification, setNewCertification] = useState({ ipfsHash: "", certType: "" });
   const [showAddCert, setShowAddCert] = useState(false);
-  const [addingCert, setAddingCert] = useState(false);
+  const [file, setFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     const initializeContract = async () => {
       try {
-        if (typeof window.ethereum !== 'undefined') {
-          await window.ethereum.request({ method: 'eth_requestAccounts' });
+        if (typeof window.ethereum !== "undefined") {
+          await window.ethereum.request({ method: "eth_requestAccounts" });
           const provider = new ethers.providers.Web3Provider(window.ethereum);
           const signer = provider.getSigner();
-          const contract = new ethers.Contract(CONTRACT_ADDRESS, contractABI, signer);
+          const contract = new ethers.Contract(
+            CONTRACT_ADDRESS,
+            contractABI,
+            signer
+          );
           setContract(contract);
         } else {
           setError("Please install MetaMask to use this dApp");
         }
       } catch (err) {
         console.error("Failed to initialize contract:", err);
-        setError("Failed to initialize contract. Please check your wallet connection.");
+        setError(
+          "Failed to initialize contract. Please check your wallet connection."
+        );
       }
     };
 
@@ -95,7 +112,7 @@ export default function UserProfile({ isAdmin = false }) {
           certificationTimestamp: userProfile.certificationTimestamp.toNumber(),
           certificationType: userProfile.certificationType,
           certificationValid: userProfile.certificationValid,
-          certifications: [] // Assuming this comes from somewhere else
+          certifications: [],
         });
 
         setLoading(false);
@@ -109,35 +126,88 @@ export default function UserProfile({ isAdmin = false }) {
     fetchUserProfile();
   }, [contract]);
 
-  const handleAddCertification = async () => {
-    if (!newCertification.ipfsHash || !newCertification.certType) return;
+  const uploadToPinata = async (file) => {
+    const pinataApiKey = import.meta.env.VITE_PINATA_API_KEY;
+    const pinataSecretApiKey = import.meta.env.VITE_PINATA_SECRET_KEY;
+
+    if (!pinataApiKey || !pinataSecretApiKey) {
+      throw new Error(
+        "Pinata API configuration is missing. Please check your environment variables."
+      );
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
 
     try {
-      setAddingCert(true);
+      const res = await axios.post(
+        "https://api.pinata.cloud/pinning/pinFileToIPFS",
+        formData,
+        {
+          maxBodyLength: "Infinity",
+          headers: {
+            "Content-Type": `multipart/form-data`,
+            pinata_api_key: pinataApiKey,
+            pinata_secret_api_key: pinataSecretApiKey,
+          },
+        }
+      );
+      return res.data.IpfsHash;
+    } catch (error) {
+      console.error("Error uploading file to Pinata:", error);
+      if (error.response) {
+        throw new Error(
+          `Pinata upload failed: ${
+            error.response.data.error || "Unknown error"
+          }`
+        );
+      }
+      throw new Error("Failed to upload file to Pinata");
+    }
+  };
+
+  const handleFileChange = (event) => {
+    setFile(event.target.files[0]);
+  };
+
+  const handleUploadCertificate = async () => {
+    if (!file) {
+      setError("Please select a file to upload");
+      return;
+    }
+
+    try {
+      setUploading(true);
+      setError("");
+
+      const ipfsHash = await uploadToPinata(file);
+
       const tx = await contract.updateUserCertification(
         userAddress,
-        newCertification.ipfsHash,
-        newCertification.certType
+        ipfsHash,
+        file.name
       );
       await tx.wait();
 
-      // Refresh profile data
+      
       const updatedProfile = await contract.getUserProfile(userAddress);
-      setProfile(prevProfile => ({
+      setProfile((prevProfile) => ({
         ...prevProfile,
         certificationIPFSHash: updatedProfile.certificationIPFSHash,
-        certificationTimestamp: updatedProfile.certificationTimestamp.toNumber(),
+        certificationTimestamp:
+          updatedProfile.certificationTimestamp.toNumber(),
         certificationType: updatedProfile.certificationType,
         certificationValid: updatedProfile.certificationValid,
       }));
 
-      setNewCertification({ ipfsHash: "", certType: "" });
+      setFile(null);
       setShowAddCert(false);
+      setError("Certificate uploaded successfully!");
     } catch (err) {
       console.error(err);
-      setError("Failed to update certification");
+      setError(err.message || "Failed to upload and update certification");
     } finally {
-      setAddingCert(false);
+      setUploading(false);
     }
   };
 
@@ -249,14 +319,12 @@ export default function UserProfile({ isAdmin = false }) {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Certification</h3>
-                {isAdmin && (
-                  <button
-                    onClick={() => setShowAddCert(true)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                  >
-                    Update Certification
-                  </button>
-                )}
+                <button
+                  onClick={() => setShowAddCert(true)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  Update Certification
+                </button>
               </div>
 
               <NeonBorderCard>
@@ -287,8 +355,17 @@ export default function UserProfile({ isAdmin = false }) {
                     <div className="flex items-center space-x-2">
                       <span className="text-sm text-gray-400">Timestamp:</span>
                       <span>
-                        {new Date(profile.certificationTimestamp * 1000).toLocaleDateString()}
+                        {new Date(
+                          profile.certificationTimestamp * 1000
+                        ).toLocaleDateString()}
                       </span>
+                    </div>
+                    <div className="mt-4">
+                      <img
+                        src={`https://gateway.pinata.cloud/ipfs/${profile.certificationIPFSHash}`}
+                        alt="Certificate"
+                        className="max-w-full h-auto rounded-lg shadow-lg"
+                      />
                     </div>
                   </div>
                 ) : (
@@ -299,7 +376,11 @@ export default function UserProfile({ isAdmin = false }) {
               </NeonBorderCard>
 
               <Transition appear show={showAddCert} as={Fragment}>
-                <Dialog as="div" className="relative z-10" onClose={() => setShowAddCert(false)}>
+                <Dialog
+                  as="div"
+                  className="relative z-10"
+                  onClose={() => setShowAddCert(false)}
+                >
                   <Transition.Child
                     as={Fragment}
                     enter="ease-out duration-300"
@@ -328,31 +409,12 @@ export default function UserProfile({ isAdmin = false }) {
                             as="h3"
                             className="text-lg font-medium leading-6 text-gray-100"
                           >
-                            Add Certification
+                            Upload Certificate
                           </Dialog.Title>
                           <div className="mt-2 space-y-4">
                             <input
-                              type="text"
-                              value={newCertification.ipfsHash}
-                              onChange={(e) =>
-                                setNewCertification((prev) => ({
-                                  ...prev,
-                                  ipfsHash: e.target.value,
-                                }))
-                              }
-                              placeholder="Enter IPFS Hash"
-                              className="w-full px-3 py-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                            <input
-                              type="text"
-                              value={newCertification.certType}
-                              onChange={(e) =>
-                                setNewCertification((prev) => ({
-                                  ...prev,
-                                  certType: e.target.value,
-                                }))
-                              }
-                              placeholder="Enter Certification Type"
+                              type="file"
+                              onChange={handleFileChange}
                               className="w-full px-3 py-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                           </div>
@@ -368,10 +430,10 @@ export default function UserProfile({ isAdmin = false }) {
                             <button
                               type="button"
                               className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                              onClick={handleAddCertification}
-                              disabled={addingCert || !newCertification.ipfsHash || !newCertification.certType}
+                              onClick={handleUploadCertificate}
+                              disabled={uploading || !file}
                             >
-                              {addingCert ? "Adding..." : "Add"}
+                              {uploading ? "Uploading..." : "Upload"}
                             </button>
                           </div>
                         </Dialog.Panel>
@@ -380,24 +442,6 @@ export default function UserProfile({ isAdmin = false }) {
                   </div>
                 </Dialog>
               </Transition>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {profile.certifications && profile.certifications.map((cert, index) => (
-                  <NeonBorderCard key={index}>
-                    <div className="flex items-center space-x-2">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 text-yellow-500"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                      <span>{cert}</span>
-                    </div>
-                  </NeonBorderCard>
-                ))}
-              </div>
             </div>
           </div>
         </div>
@@ -405,3 +449,5 @@ export default function UserProfile({ isAdmin = false }) {
     </div>
   );
 }
+
+export default UserProfile;

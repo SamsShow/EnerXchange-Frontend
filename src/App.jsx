@@ -19,7 +19,7 @@ import { CONTRACT_ADDRESS } from "./config/contractAddress";
 function App() {
   const [contract, setContract] = useState(null);
   const [account, setAccount] = useState(null);
-  // const queryClient = new QueryClient();
+
 
   useEffect(() => {
     const init = async () => {
@@ -40,7 +40,7 @@ function App() {
           const accounts = await provider.listAccounts();
           setAccount(accounts[0]);
 
-          // Listen for account changes
+         
           window.ethereum.on("accountsChanged", (accounts) => {
             setAccount(accounts[0]);
           });
@@ -54,7 +54,7 @@ function App() {
 
     init();
 
-    // Cleanup function
+    
     return () => {
       if (window.ethereum) {
         window.ethereum.removeAllListeners("accountsChanged");

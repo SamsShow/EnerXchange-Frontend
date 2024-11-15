@@ -93,7 +93,7 @@ export default function AdminDashboard({ contract }) {
         totalUsers: await contract.balanceOf(contract.address),
         activeListings: listingCount.toNumber(),
         volumeTraded: ethers.utils.formatEther(totalSupply),
-        activeUsers: 0 // This would require additional logic to determine
+        activeUsers: 0
       })
     } catch (err) {
       console.error('Error fetching metrics:', err)
@@ -117,7 +117,6 @@ export default function AdminDashboard({ contract }) {
   const handleUpdateFeeCollector = async () => {
     try {
       setLoading(true)
-      // Note: There's no setFeeCollector function in the ABI. This might need to be implemented in the contract.
       setError('setFeeCollector function not available in the contract')
     } catch (err) {
       setError('Failed to update fee collector')
